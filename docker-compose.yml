@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  web:
+    build: ./web
+    ports:
+      - ${SOURCE_APACHE_PORT}:80
+    command: sh /init.sh
+    volumes:
+      - ${SOURCE_SRC}:/var/www/html
+      - ./web/sites:/etc/apache2/sites-enabled
+      - ./web/supervisor/queue.conf:/etc/supervisor/conf.d/queue.conf
+      - ./web/init.sh:/init.sh
+      - ./logs/web:/var/log/apache2
+      - ./logs/supervisor:/var/log/supervisor
+    links:
+      - db_core
+      - redis
+  db_core:
+    image: mysql:5.7
+    volumes:
+      - datastore:/var/lib/mysql
+    ports:
+      - ${MYSQL_HOST_PORT}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  redis:
+    image: redis
+
+volumes:
+  datastore: {}
